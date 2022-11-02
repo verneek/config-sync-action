@@ -1,0 +1,22 @@
+name: 'Config Sync Action'
+description: 'Synchronizes config in the repository to the config store.'
+inputs:
+  configs-dir:  # id of input
+    description: 'Root directory of the configs'
+    required: true
+    default: './config'
+  endpoint:
+    description: 'API endpoint',
+    required: true
+  username:
+    description: 'Username',
+    required: true
+  password:
+    description: 'Password',
+    required: true
+outputs:
+  status: # id of output
+    description: 'Status of the action execution. If action exits successfully, status is set to "done"'
+runs:
+  using: 'node16'
+  main: 'index.js'
