@@ -30,6 +30,30 @@ async function syncConfig(endpoint, username, password, config) {
     return response;
 }
 
+async function padWithFiles(config) {
+    let body = JSON.parse(config);
+    let newItems = [];
+    let response = { appId: body["appId"] };
+    for (index in body["items"]) {
+      let item = body["items"][index];
+      if ("path" in item) {
+        let path = item["path"];
+        try {
+          let configDir = "~/workspace";
+          const data = await fs.readFile(join(configDir, path), {encoding: "utf-8",});
+          newItems.push({
+            keySuffix: item["keySuffix"],
+            value: data,
+          });
+        } catch (error) {
+            core.setFailed(error.message);
+        }
+      } else newItems.push(item);
+    }
+    response["items"] = newItems;  
+    return response;
+  }
+
 
 (async () => {
     try {
@@ -46,7 +70,9 @@ async function syncConfig(endpoint, username, password, config) {
         for (const file of files) {
             if (file.isFile && file.name.includes('.json')) {
                 const data = await fs.readFile(join(configDir, file.name), { encoding: 'utf-8' })
-                const response = await syncConfig(endpoint, username, password, data)
+                const afterCheckPath = await padWithFiles(data)
+                const afterCheckPathStr = JSON.stringify(afterCheckPath)
+                const response = await syncConfig(endpoint, username, password, afterCheckPathStr)
                 if (response.status > 299) {
                     throw new Error(`Failed with http code ${result.statusCode}`)
                 }
