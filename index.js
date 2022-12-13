@@ -30,6 +30,30 @@ async function syncConfig(endpoint, username, password, config) {
     return response;
 }
 
+async function padWithFiles(configDir, config) {
+    const body = JSON.parse(config);
+    const newItems = [];
+    const response = { appId: body["appId"] };
+    for (const item of body["items"]) {
+        if ("path" in item) {
+            const path = item["path"];
+            try {
+                const data = await fs.readFile(join(configDir, path), { encoding: "utf-8", });
+                newItems.push({
+                    keySuffix: item["keySuffix"],
+                    value: data,
+                });
+            } catch (error) {
+                core.setFailed(error.message);
+            }
+        } else {
+            newItems.push(item);
+        }
+    }
+    response["items"] = newItems;
+    return response;
+}
+
 
 (async () => {
     try {
@@ -41,11 +65,12 @@ async function syncConfig(endpoint, username, password, config) {
         const files = await fs.readdir(configDir, {
             withFileTypes: true
         })
-
         // @TODO use parallelization here
         for (const file of files) {
             if (file.isFile && file.name.includes('.json')) {
-                const data = await fs.readFile(join(configDir, file.name), { encoding: 'utf-8' })
+                console.log(`Processing ${file.name}`)
+                let data = await fs.readFile(join(configDir, file.name), { encoding: 'utf-8' })
+                data = JSON.stringify(await padWithFiles(configDir, data))
                 const response = await syncConfig(endpoint, username, password, data)
                 if (response.status > 299) {
                     throw new Error(`Failed with http code ${result.statusCode}`)
