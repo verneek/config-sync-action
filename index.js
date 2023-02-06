@@ -63,19 +63,21 @@ async function padWithFiles(configDir, config) {
         const username = core.getInput('username');
         const password = core.getInput('password');
         const endpoint = core.getInput('endpoint');
-        // get branch name
-        const branch = github.context.ref.replace('refs/heads/', '')
-        // get repo username
-        const repo = github.context.repo.repo
 
-        if (repo !== PROD_REPO && (branch === 'main' || branch === 'master')) {
-            core.setOutput('status', 'skipped')
+        const branch = github.context.ref.replace('refs/heads/', '');
+        const repo = github.context.repo.repo;
+        const tag = github.context.ref.replace('refs/tags/', '') || branch;
+
+        console.log(`branch: ${branch}, repo: ${repo}, tag: ${tag}`)
+
+        const isProd = repo === PROD_REPO;
+
+
+        if ((isProd && tag !== 'main') || (!isProd && tag === 'main')) {
+            core.setOutput('status', 'skipped - not prod or not main')
             return
         }
 
-        const isDev = repo !== PROD_REPO
-
-        console.log(`branch: ${branch}, repo: ${repo}, isDev: ${isDev}`)
 
         const files = await fs.readdir(configDir, {
             withFileTypes: true
@@ -85,8 +87,8 @@ async function padWithFiles(configDir, config) {
             if (file.isFile && file.name.includes('.json')) {
                 let data = await fs.readFile(join(configDir, file.name), { encoding: 'utf-8' })
                 data = JSON.stringify(await padWithFiles(configDir, data))
-                if (isDev) {
-                    data.appId = `${data.appId}-${repo}-${branch}`
+                if (!isProd) {
+                    data.appId = `${data.appId}-${tag}`
                 }
                 const response = await syncConfig(endpoint, username, password, data)
                 if (response.status > 299) {
