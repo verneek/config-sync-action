@@ -73,7 +73,7 @@ async function padWithFiles(configDir, config) {
         const isProd = repo === PROD_REPO;
 
 
-        if ((isProd && tag !== 'main') || (!isProd && tag === 'main')) {
+        if ((isProd && tag !== 'main') || (!isProd && (tag === 'main' || !tag))) {
             core.setOutput('status', 'skipped - not prod or not main')
             return
         }
@@ -88,7 +88,9 @@ async function padWithFiles(configDir, config) {
                 let data = await fs.readFile(join(configDir, file.name), { encoding: 'utf-8' })
                 data = JSON.stringify(await padWithFiles(configDir, data))
                 if (!isProd) {
-                    data.appId = `${data.appId}-${tag}`
+                    data = JSON.parse(data);
+                    data.appId = `${data.appId}-${tag}`;
+                    data = JSON.stringify(data);
                 }
                 const response = await syncConfig(endpoint, username, password, data)
                 if (response.status > 299) {
