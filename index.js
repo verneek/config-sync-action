@@ -55,6 +55,8 @@ async function padWithFiles(configDir, config) {
 }
 
 
+const PROD_REPO = 'manifests'
+
 (async () => {
     try {
         const configDir = core.getInput('config-dir') || './config';
@@ -66,6 +68,13 @@ async function padWithFiles(configDir, config) {
         // get repo username
         const repo = github.context.repo.repo
 
+        if (repo !== PROD_REPO && (branch === 'main' || branch === 'master')) {
+            core.setOutput('status', 'skipped')
+            return
+        }
+
+        const isDev = repo !== PROD_REPO
+
         console.log(`branch: ${branch}, repo: ${repo}`)
 
         const files = await fs.readdir(configDir, {
@@ -76,8 +85,8 @@ async function padWithFiles(configDir, config) {
             if (file.isFile && file.name.includes('.json')) {
                 let data = await fs.readFile(join(configDir, file.name), { encoding: 'utf-8' })
                 data = JSON.stringify(await padWithFiles(configDir, data))
-                if (branch !== 'main' && branch !== 'master' && repo !== 'manifests') {
-                    data = data.appId = `${data.appId}-${repo}-${branch}`
+                if (isDev) {
+                    data.appId = `${data.appId}-${repo}-${branch}`
                 }
                 const response = await syncConfig(endpoint, username, password, data)
                 if (response.status > 299) {
