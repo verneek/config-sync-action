@@ -3,7 +3,9 @@ const { join } = require('node:path');
 
 const core = require('@actions/core');
 // const github = require('@actions/github');
-const fetch = require('node-fetch-commonjs')
+const fetch = require('node-fetch-commonjs');
+
+const PROD_REPO = 'manifests';
 
 
 /**
@@ -54,8 +56,6 @@ async function padWithFiles(configDir, config) {
     return response;
 }
 
-
-const PROD_REPO = 'manifests'
 
 (async () => {
     try {
