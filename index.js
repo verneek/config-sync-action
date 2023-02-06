@@ -75,7 +75,7 @@ const PROD_REPO = 'manifests'
 
         const isDev = repo !== PROD_REPO
 
-        console.log(`branch: ${branch}, repo: ${repo}`)
+        console.log(`branch: ${branch}, repo: ${repo}, isDev: ${isDev}`)
 
         const files = await fs.readdir(configDir, {
             withFileTypes: true
