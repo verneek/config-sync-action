@@ -59,7 +59,7 @@ async function padWithFiles(configDir, config) {
 
 (async () => {
     try {
-        const configDir = core.getInput('config-dir');
+        const configDir = core.getInput('configs-dir');
         const username = core.getInput('username');
         const password = core.getInput('password');
         const endpoint = core.getInput('endpoint');
