@@ -14,6 +14,10 @@ inputs:
   password:
     description: Password
     required: true
+  trigger-branches:
+    description: Branches to trigger the action
+    required: false
+    default: 'main'
 outputs:
   status: # id of output
     description: 'Status of the action execution. If action exits successfully, status is set to "done"'
