@@ -65,14 +65,13 @@ async function padWithFiles(configDir, config) {
         const endpoint = core.getInput('endpoint');
         const triggerBranches = core.getInput('trigger-branches').split(',');
 
-        const branch = 'main' || github.context.ref.replace('refs/heads/', '');
-        const repo = 'manifests' || github.context.repo.repo;
-        const tag = branch || github.context.ref.replace('refs/tags/', '') || branch;
+        const branch = github.context.ref.replace('refs/heads/', '');
+        const repo = github.context.repo.repo;
+        const tag = github.context.ref.replace('refs/tags/', '') || branch;
 
         console.log(`branch: ${branch}, repo: ${repo}, tag: ${tag}`)
 
         const isProd = triggerBranches.includes(branch) && repo === PROD_REPO;
-
 
         // if ((isProd && tag !== 'main') || (!isProd && (tag === 'main' || !tag))) {
         //     core.setOutput('status', 'skipped - not prod or not main')
@@ -80,8 +79,9 @@ async function padWithFiles(configDir, config) {
         // }
 
         if (!isProd) {
-            core.setOutput('status', 'skipped - not prod')
-            return
+            // core.setOutput('status', 'skipped - not prod')
+            // return
+            console.warn('non-prod change, keys will be suffixed with tag: ',tag)
         }
 
 
@@ -93,11 +93,11 @@ async function padWithFiles(configDir, config) {
             if (file.isFile && file.name.includes('.json')) {
                 let data = await fs.readFile(join(configDir, file.name), { encoding: 'utf-8' })
                 data = JSON.stringify(await padWithFiles(configDir, data))
-                // if (!isProd) {
-                //     data = JSON.parse(data);
-                //     data.appId = `${data.appId}-${tag}`;
-                //     data = JSON.stringify(data);
-                // }
+                if (!isProd) {
+                    data = JSON.parse(data);
+                    data.appId = `${data.appId}-${tag}`;
+                    data = JSON.stringify(data);
+                }
                 const response = await syncConfig(endpoint, username, password, data)
                 if (response.status > 299) {
                     throw new Error(`Failed with status ${response.status} - ${response.statusText}`)
