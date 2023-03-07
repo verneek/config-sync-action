@@ -14,7 +14,7 @@ inputs:
   password:
     description: Password
     required: true
-  trigger-branches:
+  prod-branches:
     description: Branches to trigger the action
     required: false
     default: 'main'

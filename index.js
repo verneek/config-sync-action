@@ -63,7 +63,7 @@ async function padWithFiles(configDir, config) {
         const username = core.getInput('username');
         const password = core.getInput('password');
         const endpoint = core.getInput('endpoint');
-        const triggerBranches = core.getInput('trigger-branches').split(',');
+        const prodBranches = core.getInput('prod-branches').split(',');
 
         const branch = github.context.ref.replace('refs/heads/', '');
         const repo = github.context.repo.repo;
@@ -71,7 +71,7 @@ async function padWithFiles(configDir, config) {
 
         console.log(`branch: ${branch}, repo: ${repo}, tag: ${tag}`)
 
-        const isProd = triggerBranches.includes(branch) && repo === PROD_REPO;
+        const isProd = prodBranches.includes(branch) && repo === PROD_REPO;
 
         // if ((isProd && tag !== 'main') || (!isProd && (tag === 'main' || !tag))) {
         //     core.setOutput('status', 'skipped - not prod or not main')
