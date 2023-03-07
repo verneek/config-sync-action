@@ -67,7 +67,7 @@ async function padWithFiles(configDir, config) {
 
         const branch = github.context.ref.replace('refs/heads/', '');
         const repo = github.context.repo.repo;
-        const tag = github.context.ref.replace('refs/tags/', '') || branch;
+        const tag = github.context.ref.replace('refs/tags/', '').replace('refs/heads/', '') || branch;
 
         console.log(`branch: ${branch}, repo: ${repo}, tag: ${tag}`)
 
