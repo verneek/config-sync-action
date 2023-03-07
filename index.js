@@ -78,10 +78,11 @@ async function padWithFiles(configDir, config) {
         //     return
         // }
 
+        const nonProdSuffix = `${repo}:${tag}`;
         if (!isProd) {
             // core.setOutput('status', 'skipped - not prod')
             // return
-            console.warn('non-prod change, keys will be suffixed with tag: ',tag)
+            console.warn('non-prod change, keys will be suffixed with: ', nonProdSuffix)
         }
 
 
@@ -95,7 +96,7 @@ async function padWithFiles(configDir, config) {
                 data = JSON.stringify(await padWithFiles(configDir, data))
                 if (!isProd) {
                     data = JSON.parse(data);
-                    data.appId = `${data.appId}-${tag}`;
+                    data.appId = `${data.appId}-${nonProdSuffix}`;
                     data = JSON.stringify(data);
                 }
                 const response = await syncConfig(endpoint, username, password, data)
